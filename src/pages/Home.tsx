@@ -1,8 +1,41 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import styled from 'styled-components'
 import Table from "../components/Table";
+import { useSelector, useDispatch } from 'react-redux';
+import useFetch from '../hooks/useFetch';
+import { setData, setLoading, setError } from '../store/appsInventorySlice';
 
 function Home() {
+
+    const [pageNumber, setPageNumber] = useState(0);
+    const dispatch = useDispatch();
+    const {data: fetchedData, loading: fetchLoading, error: fetchError , putData } = useFetch('/api/v1/app-service/get-apps', 'PUT',{
+    "pageNumber": 0,
+    "pageSize": 25
+    });
+
+    useEffect(() => {
+    putData();
+    }, []);
+
+    useEffect(() => {
+    if (fetchLoading) {
+        dispatch(setLoading());
+    } else if (fetchedData) {
+        console.log(fetchedData)
+        dispatch(setData(fetchedData));
+    } else if (fetchError) {
+        dispatch(setError(fetchError));
+    }
+    }, [dispatch, fetchLoading, fetchedData, fetchError]);
+
+    //   if (status === 'loading') return <p>Loading...</p>;
+    //   if (error) return <p>Error: {error}</p>;
+
+    //   if (data){
+    //     console.log(data)
+    //   };
+
     return (
     <StyledWrapper>
         <StyledHeadline>App Inventory</StyledHeadline>

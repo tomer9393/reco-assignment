@@ -42,7 +42,7 @@ function ResponsiveAppBar() {
       <Container maxWidth={false}>
         <Toolbar disableGutters>
           <StyledRecoLogo></StyledRecoLogo>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex', gap: '24px' } }}>
             {pages.map((page) => (
               <Button
                 key={page}
