@@ -1,3 +1,22 @@
+# Reco Home Assignment
+
+### Frontend implementation using: Vite, React, MUI, Redux, MUI's data-grid-x, styled-components and framer-motion.
+
+Local run commands:
+
+- npm install
+- npm run dev
+
+# Screenshots
+
+### Here's an example screenshot of the project:
+
+#### Screenshot of the main page:
+![Screenshot of the main page](public/Screenshot-1.jpg)
+
+#### Screenshot of the app details page (on table row click):
+![Screenshot of the app details page](public/Screenshot-2.jpg)
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
