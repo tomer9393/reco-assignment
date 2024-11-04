@@ -122,9 +122,8 @@ const AppInventoryTable: React.FC = () => {
 }
 
 const StyledTableWrapper = styled.div`
-    height: 400;
+    height: 600px;
     width: 100%; 
-    margin-top: 20;
 `
 
 const StyledLoaderWrapper = styled.div`

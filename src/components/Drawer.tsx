@@ -126,7 +126,7 @@ const StyledDrawer = styled(motion.div)`
     border: 1px solid #DCDCDC;
     position: absolute;
     right: 0;
-    height: 100%;
+    height: calc(100% - 57px);
     width: 40%;
     z-index: 1400;
     box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
@@ -201,7 +201,7 @@ const StyledAppDetailsText = styled.p`
 `
 
 const StyledAppName = styled.p`
-    width: 42px;
+    width: fit-content;
     height: 23px;
     color: #717171;
 `
@@ -224,7 +224,6 @@ const StyledLogoWrapper = styled.div`
     align-items: center;
     padding: 0px;
     gap: 10px;
-    width: 74px;
     height: 23px;
     flex: none;
     order: 1;

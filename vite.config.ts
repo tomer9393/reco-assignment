@@ -10,7 +10,7 @@ export default defineConfig({
     proxy: {
       // Proxy requests starting with /api to the backend server at localhost:5000
       '/api': {
-        target: 'https://2ab8-77-89-209-166.ngrok-free.app/', // Backend server URL
+        target: 'https://0e8a-93-113-113-69.ngrok-free.app/', // Backend server URL
         changeOrigin: true,  // Needed for virtual hosted sites
       }
     }
