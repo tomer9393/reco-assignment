@@ -1,88 +1,106 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Typography, Avatar } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 import { styled as muiStyled} from '@mui/material/styles';
+import { useAppDispatch, useAppSelector } from '../store/store';
 import CloseIcon from '@mui/icons-material/Close';
 import RecoLogoContainer from '../assets/reco-logo-container.svg?react';
+import { fetchAppData } from '../store/appDetailsSlice';
+import Loader from './Loader';
 
 interface AppDetailsDrawerProps {
   open: boolean;
   onClose: () => void;
-  appDetails: {
-    name: string;
-    category: string;
-    users: number;
-    connector: string;
-    lastClassification: string;
-    usernames: string[];
-  } | null;
 }
 
-const AppDetailsDrawer: React.FC<AppDetailsDrawerProps> = ({ open, onClose, appDetails }) => {
+const AppDetailsDrawer: React.FC<AppDetailsDrawerProps> = ({ open, onClose }) => {
 
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Animate the StyledBackdrop with fade-in and fade-out effect */}
-          <StyledBackdrop
-            key={'StyledBackdrop'}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            onClick={onClose}
-          />
+    const dispatch = useAppDispatch();
+    const { selectedApp, appData, status } = useAppSelector((state: any) => state.appDetails);
 
-          {/* Animate the StyledDrawer for sliding drawer with spring animation */}
-          <StyledDrawer
-            key={'drawer'}
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{
-              type: 'spring',
-              mass: 1,
-              stiffness: 300,
-              damping: 30,
-            }}
-          >
-            <StyledAppOverviewWrapper>
-                <StyledHeadlineWrapper>
-                    <StyledHeadline>App overview</StyledHeadline>
-                    <StyledCloseButton onClick={onClose}><CloseIcon fontSize='inherit'/></StyledCloseButton>
-                </StyledHeadlineWrapper>
-                <StyledLogoWrapper>
-                    <StyledAvatar alt={appDetails?.name} src={`src/assets/${appDetails?.name.toLowerCase()}.svg`} />
-                    <StyledAppName>{appDetails?.name}</StyledAppName>
-                </StyledLogoWrapper>
-            <StyledAppDetailsBox>
-                <StyledAppDetails>
-                    <StyledAppDetailsText>App name: {appDetails?.name}</StyledAppDetailsText>
-                    <StyledAppDetailsText>Category: {appDetails?.category}</StyledAppDetailsText>
-                    <StyledAppDetailsText>Users: 20</StyledAppDetailsText>
-                    <StyledConnectorLogoWrapper>
-                        <StyledAppDetailsText>Connector: </StyledAppDetailsText>
-                        <StyledRecoLogo/>
-                    </StyledConnectorLogoWrapper>
-                    <StyledAppDetailsText>Last classification: 2 days ago</StyledAppDetailsText>
-                </StyledAppDetails>
-            </StyledAppDetailsBox>
-            </StyledAppOverviewWrapper>
-              <StyledUserListBox>
-                <StyledUserListRow>Username</StyledUserListRow>
-                {Array.from({ length: 20 }, (_, index) => (
-                    <StyledUserListRow key={index}>
-                        <StyledAvatar alt="Tomer Israel" src="src/assets/tomer-avatar.jpeg" />
-                        <Typography>tomer.israel@reco.com</Typography>
+    useEffect(() => {
+        if (selectedApp) {
+            dispatch(fetchAppData(selectedApp.id));
+        }
+    }, [dispatch, selectedApp]);
+
+    return (
+        <AnimatePresence>
+            {open && (
+            <>
+            {/* Animate the StyledBackdrop with fade-in and fade-out effect */}
+            <StyledBackdrop
+                key={'StyledBackdrop'}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={onClose}
+            />
+
+            {/* Animate the StyledDrawer for sliding drawer with spring animation */}
+            <StyledDrawer
+                key={'drawer'}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{
+                type: 'spring',
+                mass: 1,
+                stiffness: 300,
+                damping: 30,
+                }}
+            >
+
+                {
+                status == "loading" ? 
+                <Loader/> :
+                status == "succeeded" || status == "idle" ?
+                <>
+                <StyledAppOverviewWrapper>
+                    <StyledHeadlineWrapper>
+                        <StyledHeadline>App overview</StyledHeadline>
+                        <StyledCloseButton onClick={onClose}><CloseIcon fontSize='inherit'/></StyledCloseButton>
+                    </StyledHeadlineWrapper>
+                    <StyledLogoWrapper>
+                        <StyledAvatar alt={appData?.name} src={`src/assets/${appData?.name?.toLowerCase()}.svg`} />
+                        <StyledAppName>{appData?.name}</StyledAppName>
+                    </StyledLogoWrapper>
+                <StyledAppDetailsBox>
+                    <StyledAppDetails>
+                        <StyledAppDetailsText>App name: {appData?.name}</StyledAppDetailsText>
+                        <StyledAppDetailsText>Category: {appData?.category}</StyledAppDetailsText>
+                        <StyledAppDetailsText>Users: {appData?.users.length}</StyledAppDetailsText>
+                        <StyledConnectorLogoWrapper>
+                            <StyledAppDetailsText>Connector: </StyledAppDetailsText>
+                            <StyledRecoLogo/>
+                        </StyledConnectorLogoWrapper>
+                        <StyledAppDetailsText>Last classification: 2 days ago</StyledAppDetailsText>
+                    </StyledAppDetails>
+                </StyledAppDetailsBox>
+                </StyledAppOverviewWrapper>
+                <StyledUserListBox>
+                    <StyledUserListRow>Username</StyledUserListRow>
+                    <StyledUserListRow key={0}>
+                            <StyledAvatar alt="Tomer Israel" src="src/assets/tomer-avatar.jpeg" />
+                            <Typography>tomer.israel@reco.com</Typography>
                     </StyledUserListRow>
-                ))}
-              </StyledUserListBox>
-          </StyledDrawer>
-        </>
-      )}
-    </AnimatePresence>
+                    {
+                        appData ? appData?.users?.map((user: string, index: number) => (
+                            <StyledUserListRow key={index+1}>
+                                <StyledAvatar alt={user} />
+                                <Typography>{user}</Typography>
+                            </StyledUserListRow>
+                        )) : <></>
+                    }
+                </StyledUserListBox>
+                </> : <Typography color={'error'} variant="h4"> Failed to fetch app data </Typography>
+                }
+            </StyledDrawer>
+            </>
+            )}
+        </AnimatePresence>
   );
 };
 
@@ -106,7 +124,7 @@ const StyledDrawer = styled(motion.div)`
     top: 57px;
     background: #FAFAFA;
     border: 1px solid #DCDCDC;
-    position: fixed;
+    position: absolute;
     right: 0;
     height: 100%;
     width: 40%;

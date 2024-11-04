@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { DataGrid, GridPaginationModel } from '@mui/x-data-grid';
+import { useAppDispatch, useAppSelector } from '../store/store';
 import styled from 'styled-components';
 import { Typography, Avatar } from '@mui/material';
 import RecoLogoContainer from '../assets/reco-logo-container.svg?react';
 import AppDetailsDrawer from './Drawer';
+import { fetchAppsInventory, setPageNumber, setPageSize } from '../store/appsInventorySlice';
+import { handleSelectApp } from '../store/appDetailsSlice';
+import Loader from './Loader';
 
 // mockData
 const rows = [
@@ -21,20 +24,45 @@ const rows = [
 
 const AppInventoryTable: React.FC = () => {
 
-    const { data, status, error } = useSelector((state: any) => state.appsInventory);
-    const [ inventory, setInventory ] = useState(rows)
+    const dispatch = useAppDispatch();
+    const { data, status, error, pageNumber, pageSize, totalCount  } = useAppSelector((state: any) => state.appsInventory);
 
+    const [appInventory, setAppInventory] = useState(rows)
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [selectedApp, setSelectedApp] = useState<any>(null);
-  
+
+    useEffect(() => {
+        dispatch(fetchAppsInventory({ pageNumber, pageSize }));
+    }, [dispatch, pageNumber, pageSize]);
+
+    // if data fetched update the local state to use real data insted of mock
+    useEffect(() => {
+        if (data){
+            const inventory = data.map((app: any) => ({
+                id: app.appId,
+                name: app.appName,
+                category: app.category,
+            }))
+            setAppInventory(inventory)
+        };
+    }, [data]);
+
+    const handlePaginationModelChange = (model: GridPaginationModel) => {
+        if (model.page !== pageNumber) {
+          dispatch(setPageNumber(model.page));
+        }
+        if (model.pageSize !== pageSize) {
+          dispatch(setPageSize(model.pageSize));
+        }
+    };
+
     const handleRowClick = (params: any) => {
-      setSelectedApp(params.row);
-      setDrawerOpen(true);
+        dispatch(handleSelectApp(params.row));
+        setDrawerOpen(true);
     };
   
-    const closeDrawer = () => {
-      setDrawerOpen(false);
-      setSelectedApp(null);
+    const handleCloseDrawer = () => {
+        dispatch(handleSelectApp(null));
+        setDrawerOpen(false);
     };
 
     const columns = [
@@ -65,36 +93,30 @@ const AppInventoryTable: React.FC = () => {
       ];
 
         
-    if (status === 'loading') return <p>Loading...</p>;
-
-    // Uncomment when data fetching will be fixed
-    // if (error) return <p>Error: {error}</p>;
-
-    if (data){
-        const inventory = data.appRows.map((app: any) => ({
-            id: app.appId,
-            name: app.appName,
-            category: app.category,
-        }))
-        setInventory(inventory)
-    };
+    if (status === 'loading') return (<StyledLoaderWrapper><Loader/></StyledLoaderWrapper>);
 
     return (
         <StyledTableWrapper>
-        <DataGrid 
-            rows={inventory}
-            rowHeight={60}
-            columns={columns}
-            disableColumnMenu
-            onRowClick={handleRowClick}
-            pageSizeOptions={[25, 50]}
-            initialState={{
-                pagination: {
-                    paginationModel: { pageSize: 25, page: 0 },
-                },
-                }}
+            {
+                error && 
+                    <StyledErrorMessageWrapper>
+                        <Typography color="error" variant='h5'> Failed to fetch new data, please try again...</Typography>
+                    </StyledErrorMessageWrapper>
+            }
+            <DataGrid 
+                rows={appInventory}
+                rowHeight={60}
+                columns={columns}
+                disableColumnMenu
+                onRowClick={handleRowClick}
+                pagination
+                paginationMode="server"
+                rowCount={totalCount}
+                pageSizeOptions={[25, 50]}
+                paginationModel={{ page: pageNumber, pageSize: pageSize }}
+                onPaginationModelChange={handlePaginationModelChange}
             />
-        <AppDetailsDrawer open={drawerOpen} onClose={closeDrawer} appDetails={selectedApp} />
+            <AppDetailsDrawer open={drawerOpen} onClose={handleCloseDrawer}/>
         </StyledTableWrapper>
     );
 }
@@ -103,6 +125,15 @@ const StyledTableWrapper = styled.div`
     height: 400;
     width: 100%; 
     margin-top: 20;
+`
+
+const StyledLoaderWrapper = styled.div`
+    height: 100vh;
+    width: 100%; 
+`
+
+const StyledErrorMessageWrapper = styled.div`
+    margin-bottom: 20px;
 `
 
 export default AppInventoryTable;
